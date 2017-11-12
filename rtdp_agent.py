@@ -13,8 +13,8 @@ class Agent:
 
     def getAction(self, state, env) :
         Q = [0 for i in range(env.num_actions)]
-        cum_reward = 0
         for i in range(env.num_actions) :
+            cum_reward = 0
             for i in range(num_samples) :
                 next_state, reward = env.checkNextState(i)
                 cum_reward += gamma*self.getValue(self.parseState(next_state,env.num_cars )) + reward
@@ -36,7 +36,8 @@ class Agent:
             vel[i][1] = state[2 * i + 1 + 2*num_cars]
         car_ori = state(len(state)-1)
 
-        
+        parsedState = [0 for i in range(2*6 + 4 +1 )]
+
         return state
 
     def getHeuristic(self, state):
