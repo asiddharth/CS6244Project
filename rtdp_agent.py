@@ -3,7 +3,9 @@ import  numpy as np
 num_samples = 10
 gamma = 1
 class Agent:
-    value_dict = {}
+    def __init__(self) :
+        self.value_dict = {}
+
     def getValue(self, state) :
         value = self.value_dict.get(state, self.getHeuristic(state))
         return value
@@ -15,30 +17,69 @@ class Agent:
         Q = [0 for i in range(env.num_actions)]
         for i in range(env.num_actions) :
             cum_reward = 0
-            for i in range(num_samples) :
+            for j in range(num_samples) :
                 next_state, reward = env.checkNextState(i)
-                cum_reward += gamma*self.getValue(self.parseState(next_state,env.num_cars )) + reward
-            Q[i] = float(cum_reward)/num_samples
-        action = np.argmax(np.array(Q))
-        self.updateValue(self.parseState(state,env.num_cars ), Q[action])
-        return action
+                cum_reward += gamma*self.getValue(self.parseState(next_state,env.num_cars )) + reward # TODO : NEXT STATE MIGHT NOT
+            #print cum_reward, self.getValue(self.parseState(next_state,env.num_cars )), reward
+            Q[i] = round(float(cum_reward)/num_samples,5)
+        #print(Q)
+        maxQ = np.max(np.array(Q))
+        #print Q, maxQ
+        listQ = []
+        for ind in range(len(Q)) :
+            if  Q[ind] == maxQ :
+                listQ.append(ind)
+        action = np.random.randint(0, len(listQ), 1)
+        self.updateValue(self.parseState(state,env.num_cars ), Q[listQ[action[0]]])
+        return listQ[action[0]]
 
     def parseState(self, state, num_cars):
-        pos = [[] for i in num_cars]
-        vel = [0 for i in num_cars]
-        car_ori = 0
+        pos = state[0]
+        vel = state[1]
+        car_ori = state[2]
+        parsedState = [0 for i in range( 4 +2 * 4 + 1)]
+        [car_x, car_y] = pos[0]
+        [parsedState[0], parsedState[1]], parsedState[2], parsedState[3] = pos[0], vel[0], car_ori
+        min1 = float("inf")
+        min2 = float("inf")
+        min3 = float("inf")
+        min4 = float("inf")
+        min_dist = [-1,-1,-1,-1]
+        for i in range(1,num_cars) :
+            dist = (pos[i][0]-car_x)**2 + (pos[i][1]-car_y)**2
+            if dist < min1 :
+                min1 = dist
+                min_dist = [i, min_dist[0], min_dist[1], min_dist[3]]
+            elif dist < min2 :
+                min2 = dist
+                min_dist = [min_dist[0], i,min_dist[1], min_dist[3]]
+            elif dist < min3 :
+                min3 = dist
+                min_dist = [min_dist[0], min_dist[1],i, min_dist[3]]
+            elif dist < min4 :
+                min4 = dist
+                min_dist = [min_dist[0], min_dist[1], min_dist[3],i]
+        for i in range(4) :
+            [parsedState[4+2*i], parsedState[4+2*i +1]] = list(np.array(pos[min_dist[i]]) - np.array(pos[0]))
 
-        for i in range(num_cars) :
-            pos[i][0] = state[2*i]
-            pos[i][1] = state[2 * i + 1]
-        for i in range(num_cars) :
-            vel[i][0] = state[2*i + 2*num_cars]
-            vel[i][1] = state[2 * i + 1 + 2*num_cars]
-        car_ori = state(len(state)-1)
+        for i in min_dist :
+            if pos[i][0] > car_x :
+                parsedState[len(parsedState) - 1] = (pos[i][0]-car_x)**2 + (pos[i][1]-car_y)**2
+                break
+        if parsedState[len(parsedState) - 1] == 0:
+            min = float("inf")
+            for i in range(1,num_cars) :
+                if pos[i][0] > car_x:
+                    dist = (pos[i][0]-car_x)**2 + (pos[i][1]-car_y)**2
+                    if dist< min :
+                        parsedState[len(parsedState) - 1] = dist
+                        min = dist
+        if parsedState[len(parsedState) - 1] == 0:
+            parsedState[len(parsedState) - 1] = -1
 
-        parsedState = [0 for i in range(2*6 + 4 +1 )]
-
-        return state
+        return tuple([round(i,3) for i in parsedState])
 
     def getHeuristic(self, state):
-        return (state[0] - 200)/5
+        if state[0] >= 200 :
+            return 0
+        return round(float(state[0] - 200)/0.5, 3)

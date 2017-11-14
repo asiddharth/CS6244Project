@@ -37,10 +37,11 @@ class Environment :
         self.pos[0], self.vel[0], self.car_ori = self.getNextPosition(0,acc_x,angular_vel_z )
         for i in range(1,self.num_cars) :
             self.pos[i], self.vel[i],_ = self.getNextPosition(i,self.acc[i],0 )
-        c = np.concatenate([np.array(self.pos).flatten(),np.array(self.vel).flatten()])
-        d = np.concatenate([c,np.array([self.car_ori])])
+        pos = self.pos
+        vel = self.vel
+        car_ori = self.car_ori
 
-        return tuple([round(d[i], 3) for i in range(len(d))]) , self.getReward(self.pos[0], self.car_ori)
+        return tuple([pos, vel, car_ori]) , self.getReward(self.pos[0], self.car_ori)
 
     def checkNextState (self, action) :
         acc_x = 0
@@ -59,9 +60,7 @@ class Environment :
         pos[0], vel[0], car_ori = self.getNextPosition(0, acc_x, angular_vel_z)
         for i in range(1, self.num_cars):
             pos[i], vel[i], _ = self.getNextPosition(i, self.acc[i], 0)
-        c = np.concatenate([np.array(pos).flatten(), np.array(vel).flatten()])
-        d = np.concatenate([c, np.array([car_ori])])
-        return tuple([round(d[i], 3) for i in range(len(d))]), self.getReward(pos[0], car_ori)
+        return tuple([pos, vel, car_ori]), self.getReward(pos[0], car_ori)
 
 
     def getNextPosition(self, index, acc_x, angular_vel_z):
@@ -116,6 +115,11 @@ class Environment :
         elif pos[0] >= 200 :
             reward = 0
         return  reward
+
+    def reset(self, num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise,
+                  acc_resolution, ang_resolution,acc_min, angular_vel_z_min, car_ori):
+        self.__init__(num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise,
+                  acc_resolution, ang_resolution,acc_min, angular_vel_z_min, car_ori)
 
 
 
