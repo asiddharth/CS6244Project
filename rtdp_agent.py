@@ -1,10 +1,11 @@
 from Environment import  Environment
 import  numpy as np
-num_samples = 10
+num_samples = 1
 gamma = 1
 class Agent:
     def __init__(self) :
         self.value_dict = {}
+        self.need_update = []
 
     def getValue(self, state) :
         value = self.value_dict.get(state, self.getHeuristic(state))
@@ -15,16 +16,14 @@ class Agent:
 
     def getAction(self, state, env) :
         Q = [0 for i in range(env.num_actions)]
+        self.need_update.append(state)
         for i in range(env.num_actions) :
             cum_reward = 0
             for j in range(num_samples) :
                 next_state, reward = env.checkNextState(i)
                 cum_reward += gamma*self.getValue(self.parseState(next_state,env.num_cars )) + reward # TODO : NEXT STATE MIGHT NOT
-            #print cum_reward, self.getValue(self.parseState(next_state,env.num_cars )), reward
             Q[i] = round(float(cum_reward)/num_samples,5)
-        #print(Q)
         maxQ = np.max(np.array(Q))
-        #print Q, maxQ
         listQ = []
         for ind in range(len(Q)) :
             if  Q[ind] == maxQ :
@@ -33,18 +32,42 @@ class Agent:
         self.updateValue(self.parseState(state,env.num_cars ), Q[listQ[action[0]]])
         return listQ[action[0]]
 
+    def updateEndEpisode(self, env):
+        for i in range(5) :
+            for state in reversed(self.need_update) :
+                env.setState(state)
+                Q = [0 for i in range(env.num_actions)]
+                for i in range(env.num_actions):
+                    cum_reward = 0
+                    for j in range(max(num_samples/5, 1)):
+                        next_state, reward = env.checkNextState(i)
+                        cum_reward += gamma * self.getValue(
+                            self.parseState(next_state, env.num_cars)) + reward  # TODO : NEXT STATE MIGHT NOT
+                    Q[i] = round(float(cum_reward) / num_samples, 5)
+                maxQ = np.max(np.array(Q))
+                listQ = []
+                for ind in range(len(Q)):
+                    if Q[ind] == maxQ:
+                        listQ.append(ind)
+                action = np.random.randint(0, len(listQ), 1)
+                self.updateValue(self.parseState(state, env.num_cars), Q[listQ[action[0]]])
+        self.need_update = []
+
     def parseState(self, state, num_cars):
         pos = state[0]
         vel = state[1]
         car_ori = state[2]
-        parsedState = [0 for i in range( 4 +2 * 4 + 1)]
+        parsedState = [0 for i in range( 3 +2 * 4 + 1)]
         [car_x, car_y] = pos[0]
-        [parsedState[0], parsedState[1]], parsedState[2], parsedState[3] = pos[0], vel[0], car_ori
+        parsedState[0] = car_y
+        parsedState[1], parsedState[2] = vel[0], car_ori
         min1 = float("inf")
         min2 = float("inf")
         min3 = float("inf")
         min4 = float("inf")
         min_dist = [-1,-1,-1,-1]
+        tile_size = 7
+        dist_max = 20
         for i in range(1,num_cars) :
             dist = (pos[i][0]-car_x)**2 + (pos[i][1]-car_y)**2
             if dist < min1 :
@@ -60,7 +83,10 @@ class Agent:
                 min4 = dist
                 min_dist = [min_dist[0], min_dist[1], min_dist[3],i]
         for i in range(4) :
-            [parsedState[4+2*i], parsedState[4+2*i +1]] = list(np.array(pos[min_dist[i]]) - np.array(pos[0]))
+            if np.sum((np.array(pos[min_dist[i]]) - np.array(pos[0])) ** 2) < dist_max :
+                [parsedState[3+2*i], parsedState[3+2*i +1]] = list(np.array(pos[min_dist[i]]) - np.array(pos[0]))
+            else :
+                [parsedState[3 + 2 * i], parsedState[3 + 2 * i + 1]] = [-1,-1]
 
         for i in min_dist :
             if pos[i][0] > car_x :
@@ -77,7 +103,7 @@ class Agent:
         if parsedState[len(parsedState) - 1] == 0:
             parsedState[len(parsedState) - 1] = -1
 
-        return tuple([round(i,3) for i in parsedState])
+        return tuple([round(round(i,0)/tile_size,0) for i in parsedState])
 
     def getHeuristic(self, state):
         if state[0] >= 200 :

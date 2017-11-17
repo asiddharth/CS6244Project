@@ -41,7 +41,7 @@ class Environment :
         vel = self.vel
         car_ori = self.car_ori
 
-        return tuple([pos, vel, car_ori]) , self.getReward(self.pos[0], self.car_ori)
+        return tuple([pos, vel, car_ori]) , self.getReward(self.pos[0], self.car_ori, self.vel[0])
 
     def checkNextState (self, action) :
         acc_x = 0
@@ -60,7 +60,7 @@ class Environment :
         pos[0], vel[0], car_ori = self.getNextPosition(0, acc_x, angular_vel_z)
         for i in range(1, self.num_cars):
             pos[i], vel[i], _ = self.getNextPosition(i, self.acc[i], 0)
-        return tuple([pos, vel, car_ori]), self.getReward(pos[0], car_ori)
+        return tuple([pos, vel, car_ori]), self.getReward(pos[0], car_ori,vel[0])
 
 
     def getNextPosition(self, index, acc_x, angular_vel_z):
@@ -105,21 +105,33 @@ class Environment :
                 collision = True
                 break
 
-        return  collision
+        return collision
 
-    def getReward(self, pos, car_ori):
-        reward = -1
+    def getReward(self, pos, car_ori,vel):
+        reward = -5
         collision = self.checkCollision(pos, car_ori)
-        if collision :
-            reward = -50
+        if collision or pos[1] < 14 or pos[1] > 26:
+            reward = -500 + pos[0] - 100
         elif pos[0] >= 200 :
-            reward = 0
-        return  reward
+            reward = 100
+        else :
+            if pos[1] < 16.4 or pos[1] > 23.6 :
+                reward = -(np.exp(0.2*np.min([np.abs(pos[1] - 16.4) ,np.abs(pos[1] - 23.6)  ]))) -1 -1 + (vel)*DT*(np.cos(np.deg2rad(car_ori)))
+            else :
+                reward =  (-(np.min([(np.abs(pos[1] - 16.4)), (np.abs(pos[1] - 23.6))]))) -1 + (vel)*DT*(np.cos(np.deg2rad(car_ori)))
+            if np.abs(vel) <=  0.5 :
+                reward -= 5
+        return reward
 
     def reset(self, num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise,
                   acc_resolution, ang_resolution,acc_min, angular_vel_z_min, car_ori):
         self.__init__(num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise,
                   acc_resolution, ang_resolution,acc_min, angular_vel_z_min, car_ori)
+
+    def setState(self, state):
+        self.pos = state[0]
+        self.vel = state[1]
+        self.car_ori = state[2]
 
 
 
