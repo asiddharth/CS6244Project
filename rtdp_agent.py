@@ -19,7 +19,7 @@ class Agent:
     def getAction(self, state, env) :
         #print (self.getValue(self.parseState(state, env.num_cars), env))
         Q = [0 for i in range(env.num_actions)]
-        self.need_update.append(state)
+        #self.need_update.append(state)
         for i in range(env.num_actions) :
             cum_reward = 0
             for j in range(num_samples) :
@@ -71,7 +71,7 @@ class Agent:
         min3 = float("inf")
         min4 = float("inf")
         min_dist = [-1,-1,-1,-1]
-        tile_size = 2
+        tile_size = 1
         dist_max = 400
         for i in range(1,num_cars) :
             dist = (pos[i][0]-car_x)**2 + (pos[i][1]-car_y)**2

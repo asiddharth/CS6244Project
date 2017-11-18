@@ -24,11 +24,11 @@ env2 = Environment(num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z
 # print (env.checkCollision(env.pos[0], env.car_ori))
 # print (env.getReward(env.pos[0], env.car_ori))
 
-
+lala = 0
 agent = Agent()
 num_episodes = 0
 count_success = 0
-while num_episodes < 5001 :
+while num_episodes < 5001:
     steps = 0
     reward = -1
     env.reset(num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise,
@@ -38,22 +38,22 @@ while num_episodes < 5001 :
     init_state = tuple([env.pos, env.vel, env.car_ori])
     state = init_state
     cum_reward = 0
-    while not(reward == 1000 or reward == -200) and steps < 1000:
+    while not(reward == 3000 or reward == -200) and steps < 1000:
         action = agent.getAction(state, env)
         #print("Taking Action" , str(action))
         state, reward = env.goToNextState(action)
         cum_reward += reward
-        if reward == 1000 :
+        if reward == 3000 :
             count_success +=1
-        #print("Next State, Reward" ,state, str(reward))
+        #print("Next State, Reward" ,state, str(reward), env.goals_reached)
         steps +=1
         #print steps
     if num_episodes % 10 == 0 :
-        print (num_episodes, steps, reward,cum_reward, state)
+        print (num_episodes, steps, reward,cum_reward, env.goals_reached, state)
     if num_episodes % 500 == 0 :
         print (count_success)
         count_success = 0
-    if reward == 1000 :
-        agent.updateEndEpisode(env2)
+    # if reward == 1000 :
+    #     agent.updateEndEpisode(env2)
     num_episodes +=1
 
