@@ -3,6 +3,7 @@ import numpy as np
 DT = 0.1
 
 class Environment :
+    goals_reached = 0
     def __init__(self, num_cars,num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise, acc_resolution, ang_resolution,acc_min, angular_vel_z_min, car_ori ):
         self.num_cars = num_cars
         self.pos = []
@@ -111,14 +112,20 @@ class Environment :
         reward = -5
         collision = self.checkCollision(pos, car_ori)
         if collision or pos[1] < 14 or pos[1] > 26:
-            reward = -200 + pos[0] - 100
-        elif pos[0] >= 200 :
+            reward = -200
+        elif pos[0] >= 150 and self.goals_reached ==0:
+            reward = 250
+            self.goals_reached += 1
+        elif pos[0] >= 190 and self.goals_reached ==1:
+            reward = 500
+            self.goals_reached += 1
+        elif self.goals_reached ==2 and pos[0] > 200 :
             reward = 1000
         else :
             if pos[1] < 16.4 or pos[1] > 23.6 :
-                reward = -(np.exp(0.2*np.min([np.abs(pos[1] - 16.4) ,np.abs(pos[1] - 23.6)  ]))) -1 -1 + (vel)*DT*(np.cos(np.deg2rad(car_ori)))
+                reward = -(np.exp(0.2*np.min([np.abs(pos[1] - 16.4) ,np.abs(pos[1] - 23.6)  ]))) -1 -1 + float(pos[0] - 100)/20
             else :
-                reward =  (-(np.min([(np.abs(pos[1] - 16.4)), (np.abs(pos[1] - 23.6))]))) -1 + (vel)*DT*(np.cos(np.deg2rad(car_ori)))
+                reward = -1 + float(pos[0] - 100)/20 #+ (-(np.min([(np.abs(pos[1] - 16.4)), (np.abs(pos[1] - 23.6))])))
             if np.abs(vel) <=  0.5 :
                 reward -= 5
         return reward

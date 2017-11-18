@@ -1,3 +1,5 @@
+from itertools import starmap
+
 from Environment import  Environment
 import  numpy as np
 num_samples = 1
@@ -15,8 +17,9 @@ class Agent:
         self.value_dict[state] = value
 
     def getAction(self, state, env) :
+        #print (self.getValue(self.parseState(state, env.num_cars), env))
         Q = [0 for i in range(env.num_actions)]
-        #self.need_update.append(state)
+        self.need_update.append(state)
         for i in range(env.num_actions) :
             cum_reward = 0
             for j in range(num_samples) :
@@ -30,6 +33,8 @@ class Agent:
                 listQ.append(ind)
         action = np.random.randint(0, len(listQ), 1)
         self.updateValue(self.parseState(state,env.num_cars ), Q[listQ[action[0]]])
+        #print (self.getValue(self.parseState(state, env.num_cars), env), Q)
+        #print (self.parseState(state, env.num_cars))
         return listQ[action[0]]
 
     def updateEndEpisode(self, env):
@@ -50,8 +55,6 @@ class Agent:
                     if Q[ind] == maxQ:
                         listQ.append(ind)
                 action = np.random.randint(0, len(listQ), 1)
-                if (indddddd == 4 ) :
-                    print(Q[listQ[action[0]]],state )
                 self.updateValue(self.parseState(state, env.num_cars), Q[listQ[action[0]]])
         self.need_update = []
 
@@ -68,8 +71,8 @@ class Agent:
         min3 = float("inf")
         min4 = float("inf")
         min_dist = [-1,-1,-1,-1]
-        tile_size = 7
-        dist_max = 20
+        tile_size = 2
+        dist_max = 400
         for i in range(1,num_cars) :
             dist = (pos[i][0]-car_x)**2 + (pos[i][1]-car_y)**2
             if dist < min1 :
@@ -108,8 +111,9 @@ class Agent:
         return tuple([round(round(i,0)/tile_size,0) for i in parsedState])
 
     def getHeuristic(self, state, env):
-        if env.checkCollision([state[0],state[1]], state[3]) :
-            return -500
-        if state[0] >= 200 :
-            return 0
-        return round(float(state[0] - 200)/0.5, 3)
+        # if env.checkCollision([state[0],state[1]], state[3]) :
+        #     return -500
+        # if state[0] >= 200 :
+        #     return 0
+        # return round(float(state[0] - 200)/0.5, 3)
+        return 0
