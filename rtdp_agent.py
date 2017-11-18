@@ -1,8 +1,6 @@
-from itertools import starmap
-
 from Environment import  Environment
 import  numpy as np
-num_samples = 1
+num_samples = 5
 gamma = 1
 class Agent:
     def __init__(self) :
@@ -66,6 +64,7 @@ class Agent:
         [car_x, car_y] = pos[0]
         parsedState[0],parsedState[1] = car_x,car_y
         parsedState[2], parsedState[3] = vel[0], car_ori
+        parsedState[3] = round(round((float(parsedState[3])/45) * 5,0) *9 ,0)
         min1 = float("inf")
         min2 = float("inf")
         min3 = float("inf")
@@ -109,6 +108,8 @@ class Agent:
             parsedState[len(parsedState) - 1] = -1
 
         return tuple([round(round(i,0)/tile_size,0) for i in parsedState])
+
+
 
     def getHeuristic(self, state, env):
         # if env.checkCollision([state[0],state[1]], state[3]) :

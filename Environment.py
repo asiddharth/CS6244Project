@@ -1,6 +1,6 @@
 import numpy as np
 
-DT = 0.1
+DT = 0.5
 
 class Environment :
     def __init__(self, num_cars,num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise, acc_resolution, ang_resolution,acc_min, angular_vel_z_min, car_ori ):
@@ -41,8 +41,10 @@ class Environment :
         pos = self.pos
         vel = self.vel
         car_ori = self.car_ori
-
-        return tuple([pos, vel, car_ori]) , self.getReward(pos[0], car_ori, vel[0])
+        reward = self.getReward(pos[0], car_ori, vel[0])
+        # if self.checkIntermediateCollision(0, acc_x, angular_vel_z) :
+        #     reward = -200
+        return tuple([pos, vel, car_ori]) , reward
 
     def checkNextState (self, action) :
         acc_x = 0
@@ -63,6 +65,8 @@ class Environment :
             pos[i], vel[i], _ = self.getNextPosition(i, self.acc[i], 0)
         goal = self.goals_reached
         reward = self.getReward(pos[0], car_ori,vel[0])
+        # if self.checkIntermediateCollision(0, acc_x, angular_vel_z) :
+        #     reward = -200
         self.goals_reached = goal
         return tuple([pos, vel, car_ori]), reward
 
@@ -76,11 +80,28 @@ class Environment :
             car_ori = round(self.car_ori,3)
         else :
             car_ori = 0
-
+        car_ori = max(min(car_ori,45),-45) #round(round((float(max(min(car_ori,45),-45))/45) * 5,0) *9 ,0)
         vel = round(min(max(self.vel[index] + acc_x*DT, -5),5),3)
         pos_x = round(self.pos[index][0] + vel*DT*(np.cos(np.deg2rad(car_ori))),3)
         pos_y = round(self.pos[index][1] + vel * DT*(np.sin(np.deg2rad(car_ori))),3)
         return [pos_x,pos_y], vel, car_ori
+
+    def checkIntermediateCollision(self, index, acc_x, angular_vel_z):
+        for dT in [0.2,0.4] :
+            if index == 0 and angular_vel_z != 0:
+                car_ori = round(self.car_ori + angular_vel_z*dT,3)
+            elif angular_vel_z == 0 and index == 0:
+                car_ori = round(self.car_ori,3)
+            else :
+                car_ori = 0
+            car_ori = max(min(car_ori,45),-45) #round(round((float(max(min(car_ori,45),-45))/45) * 5,0) *9 ,0)
+            vel = round(min(max(self.vel[index] + acc_x*dT, -5),5),3)
+            pos_x = round(self.pos[index][0] + vel*dT*(np.cos(np.deg2rad(car_ori))),3)
+            pos_y = round(self.pos[index][1] + vel * dT*(np.sin(np.deg2rad(car_ori))),3)
+            if self.checkCollision([pos_x,pos_y], car_ori) :
+                return True
+        return False
+
 
     def getBoundingBox(self, pos, car_ori) :
         e = np.array([[1.98,0.6], [1.98,-0.6], [0.405, 0.6],[-0.405,-0.6] ])
@@ -91,7 +112,7 @@ class Environment :
         return round(pos[0] + min[0],3), round(pos[1] + min[1],3), round(pos[0] + max[0],3), round(pos[1] + max[1],3)
 
     def checkCollision(self, pos, ori):
-        gap = 0.5
+        gap = 1.0
         min_x, min_y, max_x, max_y = self.getBoundingBox(pos, ori)
 
         mid_pos = [float(min_x + max_x)/2 , float(min_y + max_y)/2]
@@ -111,25 +132,23 @@ class Environment :
 
         return collision
 
-    def getReward(self, pos, car_ori,vel):
+    def getReward(self, pos, car_ori, vel):
         collision = self.checkCollision(pos, car_ori)
         if collision or pos[1] < 14 or pos[1] > 26:
             return -200
         elif pos[0] >= 150 and self.goals_reached ==0:
             self.goals_reached = 1
-            return 1000
+            return 300
         elif pos[0] >= 190 and self.goals_reached ==1:
             self.goals_reached = 2
-            return 2000
+            return 600
         elif self.goals_reached ==2 and pos[0] > 200 :
-            return 3000
+            return 1200
         else :
             if pos[1] < 16.4 or pos[1] > 23.6 :
                 reward = -(np.exp(0.2*np.min([np.abs(pos[1] - 16.4) ,np.abs(pos[1] - 23.6)  ]))) -1 -1 + float(pos[0] - 100)/100
             else :
-                reward = -1 + float(pos[0] - 100)/100 #+ (-(np.min([(np.abs(pos[1] - 16.4)), (np.abs(pos[1] - 23.6))])))
-            # if np.abs(vel) <=  0.5 :
-            #     reward -= 5
+                reward = -1 + float(pos[0] - 100)/100
         return reward
 
     def reset(self, num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise,
