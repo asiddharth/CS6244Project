@@ -33,22 +33,28 @@ while num_episodes < 10000 :
     reward = -1
     env.reset(num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise,
                   acc_resolution, ang_resolution,acc_min, angular_vel_z_min, car_ori)
+    env2.reset(num_cars, num_actions, pos, vel, acc, acc_noise, angular_vel_z_noise,
+              acc_resolution, ang_resolution, acc_min, angular_vel_z_min, car_ori)
     init_state = tuple([env.pos, env.vel, env.car_ori])
     state = init_state
-    while not(reward == 100 or reward < -395) and steps < 1000:
+    cum_reward = 0
+    while not(reward == 1000 or reward < -95) and steps < 1000:
         action = agent.getAction(state, env)
         #print("Taking Action" , str(action))
         state, reward = env.goToNextState(action)
-        if reward == 100 :
+        cum_reward += reward
+        if reward == 1000 :
             count_success +=1
         #print("Next State, Reward" ,state, str(reward))
         steps +=1
         #print steps
     if num_episodes % 10 == 0 :
-        print (num_episodes, steps, reward, state)
+        print (num_episodes, steps, reward,cum_reward, state)
     if num_episodes % 500 == 0 :
         print (count_success)
         count_success = 0
-    agent.updateEndEpisode(env2)
+    # if (reward == 1000) :
+    #     agent.updateEndEpisode(env2)
+    #     break    #REMOVE
     num_episodes +=1
 

@@ -7,8 +7,8 @@ class Agent:
         self.value_dict = {}
         self.need_update = []
 
-    def getValue(self, state) :
-        value = self.value_dict.get(state, self.getHeuristic(state))
+    def getValue(self, state, env) :
+        value = self.value_dict.get(state, self.getHeuristic(state, env))
         return value
 
     def updateValue(self, state, value) :
@@ -16,12 +16,12 @@ class Agent:
 
     def getAction(self, state, env) :
         Q = [0 for i in range(env.num_actions)]
-        self.need_update.append(state)
+        #self.need_update.append(state)
         for i in range(env.num_actions) :
             cum_reward = 0
             for j in range(num_samples) :
                 next_state, reward = env.checkNextState(i)
-                cum_reward += gamma*self.getValue(self.parseState(next_state,env.num_cars )) + reward # TODO : NEXT STATE MIGHT NOT
+                cum_reward += gamma*self.getValue(self.parseState(next_state,env.num_cars ), env) + reward # TODO : NEXT STATE MIGHT NOT
             Q[i] = round(float(cum_reward)/num_samples,5)
         maxQ = np.max(np.array(Q))
         listQ = []
@@ -33,7 +33,7 @@ class Agent:
         return listQ[action[0]]
 
     def updateEndEpisode(self, env):
-        for i in range(5) :
+        for indddddd in range(5) :
             for state in reversed(self.need_update) :
                 env.setState(state)
                 Q = [0 for i in range(env.num_actions)]
@@ -42,7 +42,7 @@ class Agent:
                     for j in range(max(num_samples/5, 1)):
                         next_state, reward = env.checkNextState(i)
                         cum_reward += gamma * self.getValue(
-                            self.parseState(next_state, env.num_cars)) + reward  # TODO : NEXT STATE MIGHT NOT
+                            self.parseState(next_state, env.num_cars), env) + reward  # TODO : NEXT STATE MIGHT NOT
                     Q[i] = round(float(cum_reward) / num_samples, 5)
                 maxQ = np.max(np.array(Q))
                 listQ = []
@@ -50,6 +50,8 @@ class Agent:
                     if Q[ind] == maxQ:
                         listQ.append(ind)
                 action = np.random.randint(0, len(listQ), 1)
+                if (indddddd == 4 ) :
+                    print(Q[listQ[action[0]]],state )
                 self.updateValue(self.parseState(state, env.num_cars), Q[listQ[action[0]]])
         self.need_update = []
 
@@ -57,10 +59,10 @@ class Agent:
         pos = state[0]
         vel = state[1]
         car_ori = state[2]
-        parsedState = [0 for i in range( 3 +2 * 4 + 1)]
+        parsedState = [0 for i in range( 4 +2 * 4 + 1)]
         [car_x, car_y] = pos[0]
-        parsedState[0] = car_y
-        parsedState[1], parsedState[2] = vel[0], car_ori
+        parsedState[0],parsedState[1] = car_x,car_y
+        parsedState[2], parsedState[3] = vel[0], car_ori
         min1 = float("inf")
         min2 = float("inf")
         min3 = float("inf")
@@ -84,9 +86,9 @@ class Agent:
                 min_dist = [min_dist[0], min_dist[1], min_dist[3],i]
         for i in range(4) :
             if np.sum((np.array(pos[min_dist[i]]) - np.array(pos[0])) ** 2) < dist_max :
-                [parsedState[3+2*i], parsedState[3+2*i +1]] = list(np.array(pos[min_dist[i]]) - np.array(pos[0]))
+                [parsedState[4+2*i], parsedState[4+2*i +1]] = list(np.array(pos[min_dist[i]]) - np.array(pos[0]))
             else :
-                [parsedState[3 + 2 * i], parsedState[3 + 2 * i + 1]] = [-1,-1]
+                [parsedState[4 + 2 * i], parsedState[4 + 2 * i + 1]] = [-1,-1]
 
         for i in min_dist :
             if pos[i][0] > car_x :
@@ -105,7 +107,9 @@ class Agent:
 
         return tuple([round(round(i,0)/tile_size,0) for i in parsedState])
 
-    def getHeuristic(self, state):
+    def getHeuristic(self, state, env):
+        if env.checkCollision([state[0],state[1]], state[3]) :
+            return -500
         if state[0] >= 200 :
             return 0
         return round(float(state[0] - 200)/0.5, 3)

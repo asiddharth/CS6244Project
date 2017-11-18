@@ -111,9 +111,9 @@ class Environment :
         reward = -5
         collision = self.checkCollision(pos, car_ori)
         if collision or pos[1] < 14 or pos[1] > 26:
-            reward = -500 + pos[0] - 100
+            reward = -200 + pos[0] - 100
         elif pos[0] >= 200 :
-            reward = 100
+            reward = 1000
         else :
             if pos[1] < 16.4 or pos[1] > 23.6 :
                 reward = -(np.exp(0.2*np.min([np.abs(pos[1] - 16.4) ,np.abs(pos[1] - 23.6)  ]))) -1 -1 + (vel)*DT*(np.cos(np.deg2rad(car_ori)))
