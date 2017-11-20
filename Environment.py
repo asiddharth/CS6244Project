@@ -41,7 +41,7 @@ class Environment :
         pos = self.pos
         vel = self.vel
         car_ori = self.car_ori
-        reward = self.getReward(pos[0], car_ori, vel[0])
+        reward = self.getReward(pos, car_ori, vel[0])
         # if self.checkIntermediateCollision(0, acc_x, angular_vel_z) :
         #     reward = -200
         return tuple([pos, vel, car_ori]) , reward
@@ -64,7 +64,7 @@ class Environment :
         for i in range(1, self.num_cars):
             pos[i], vel[i], _ = self.getNextPosition(i, self.acc[i], 0)
         goal = self.goals_reached
-        reward = self.getReward(pos[0], car_ori,vel[0])
+        reward = self.getReward(pos, car_ori,vel[0])
         # if self.checkIntermediateCollision(0, acc_x, angular_vel_z) :
         #     reward = -200
         self.goals_reached = goal
@@ -133,22 +133,32 @@ class Environment :
         return collision
 
     def getReward(self, pos, car_ori, vel):
-        collision = self.checkCollision(pos, car_ori)
-        if collision or pos[1] < 14 or pos[1] > 26:
+        collision = self.checkCollision(pos[0], car_ori)
+        mindist = float("inf")
+        # for i in range(1,self.num_cars) :
+        #     dist = np.sum((np.array(pos[i]) - np.array(pos[0])) ** 2)
+        #     if mindist > dist :
+        #         mindist = dist
+        reward = 0 #- float(10)/(dist
+        reward -= float(np.abs([car_ori])) /45 * 2.5
+        if pos[0][1] < 16.4 or pos[0][1] > 23.6:
+            reward += -(np.exp(0.2 * np.min([np.abs(pos[0][1] - 16.4), np.abs(pos[0][1] - 23.6)]))) - 1 - 1 + (vel -5)
+        else:
+            reward += -1 + (vel - 5) #float(pos[0][0] - 100) / 100
+
+        if collision or pos[0][1] < 14 or pos[0][1] > 26:
             return -200
-        elif pos[0] >= 150 and self.goals_reached ==0:
+        elif pos[0][0] >= 115 and self.goals_reached ==0:
             self.goals_reached = 1
-            return 300
-        elif pos[0] >= 190 and self.goals_reached ==1:
+            reward += 150
+        elif pos[0][0] >= 150 and self.goals_reached ==1:
             self.goals_reached = 2
-            return 600
-        elif self.goals_reached ==2 and pos[0] > 200 :
-            return 1200
-        else :
-            if pos[1] < 16.4 or pos[1] > 23.6 :
-                reward = -(np.exp(0.2*np.min([np.abs(pos[1] - 16.4) ,np.abs(pos[1] - 23.6)  ]))) -1 -1 + float(pos[0] - 100)/100
-            else :
-                reward = -1 + float(pos[0] - 100)/100
+            reward += 300
+        elif pos[0][0] >= 190 and self.goals_reached ==2:
+            self.goals_reached = 3
+            reward += 600
+        elif self.goals_reached ==3 and pos[0][0] > 200 :
+            reward += 1200
         return reward
 
     def reset(self, num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise,
