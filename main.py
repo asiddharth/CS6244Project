@@ -3,13 +3,13 @@ from rtdp_agent import Agent
 import pickle
 from copy import deepcopy
 
-num_cars = 7
+num_cars = 6
 num_actions = 21+9 #21 for acceleration, 9 for angular velocity
-pos = [[10,17],[30,17],[60,19],[90,21],[120,17], [150,15], [180,19]]
-vel = [0,2.0,1.0,1.5,0.5, 0.5, 0.5]
-acc = [0,0,0,0,0,0,0]
-acc_noise = 1
-angular_vel_z_noise = 1
+pos = [[60,17],[100,17],[120,19], [140, 21], [120, 17], [170, 20]]
+vel = [0,0.5,0.5, 0.5, 0.5,-0.5]
+acc = [0,0,0,0,0,0]
+acc_noise = 0
+angular_vel_z_noise = 0
 acc_resolution = 0.5
 ang_resolution = 10
 acc_min = -5
@@ -74,12 +74,12 @@ while num_episodes < 5001:
         print (num_episodes, steps, reward,cum_reward, env.goals_reached, state)
     if num_episodes % 50 == 0 and num_episodes != 0:
         print (count_success, max_reward, float(avg_reward)/50, float(avg_dist)/50,goal1, goal2)
+        stats.append((count_success, max_reward, float(avg_reward)/50, goal1, goal2, float(avg_dist)/50, num_episodes))
         avg_reward = 0
         avg_dist = 0
         count_success = 0
         goal1 = 0
         goal2 = 0
-        stats.append((count_success, max_reward, float(avg_reward)/50, goal1, goal2, float(avg_dist)/50, num_episodes))
     # if num_episodes > 0 :
     #     if steps < min_steps and state[0][0][0] > 200:
     #         min_steps = steps
@@ -93,7 +93,7 @@ while num_episodes < 5001:
             max_reward = cum_reward
             final_seq = deepcopy(state_sequence)
     if num_episodes % 500 == 0 :
-        pickle.dump(final_seq, open("sequence_noise_1_vel_half_env4" + str(num_episodes) + ".pkl", "wb"))
+        pickle.dump(final_seq, open("sequence_noise_1_vel_half_env5" + str(num_episodes) + ".pkl", "wb"))
         print len(final_seq), max_reward
         max_reward = -float("inf")
 
@@ -103,8 +103,8 @@ while num_episodes < 5001:
 
 print len(final_seq)
 print final_seq
-with open("sequence_noise_1_vel_half_env4.pkl", "wb") as f:
+with open("sequence_noise_1_vel_half_env5.pkl", "wb") as f:
     pickle.dump(final_seq, f)
 
-with open("sequence_noise_1_vel_half_env4_stats.pkl", "wb") as f:
+with open("sequence_noise_1_vel_half_env5_stats.pkl", "wb") as f:
     pickle.dump(stats, f)

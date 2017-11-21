@@ -1,6 +1,6 @@
 from Environment import  Environment
 import  numpy as np
-num_samples = 5
+num_samples = 1
 gamma = 1
 class Agent:
     def __init__(self) :
