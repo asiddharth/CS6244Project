@@ -5,8 +5,8 @@ import matplotlib.patches as mpatches
 from matplotlib import animation
 import pickle
 
-num_cars = 7
-blah = pickle.load(open("sequence_noise_1_vel_half_env4500.pkl", "rb"))
+num_cars = 5
+blah = pickle.load(open("sequence_noise_0_vel_half_env55000.pkl", "rb"))
 
 fig = plt.figure()
 

@@ -1,7 +1,7 @@
 import pickle
 import matplotlib.pyplot as plt
-
-blah = pickle.load(open("7cars_start10/sequence_noise_1_vel_half_env4_stats.pkl", "rb"))
+name = "env5"
+blah = pickle.load(open("sequence_noise_1_vel_half_env5_stats.pkl", "rb"))
 print blah
 mapping=  {}
 for entry in blah :
@@ -24,35 +24,35 @@ plt.plot(sorted(mapping.iterkeys()), avg_reward)
 plt.xlabel('Runs')
 plt.ylabel('Average Reward')
 plt.title('Reward v/s Runs')
-plt.savefig('reward.png')
+plt.savefig('reward' + name + '.png')
 plt.show()
 
 plt.plot(sorted(mapping.iterkeys()), avg_dist)
 plt.xlabel('Runs')
 plt.ylabel('Average Distance')
 plt.title('Distance v/s Runs')
-plt.savefig('distance.png')
+plt.savefig('distance' + name +'.png')
 plt.show()
 
 plt.plot(sorted(mapping.iterkeys()), max_reward)
 plt.xlabel('Runs')
 plt.ylabel('Max Reward')
 plt.title('Max Reward v/s Runs')
-plt.savefig('max_reward.png')
+plt.savefig('max_reward' + name +'.png')
 plt.show()
 
 plt.plot(sorted(mapping.iterkeys()), count_success)
 plt.xlabel('Runs')
 plt.ylabel('Successes')
 plt.title('Successes v/s Runs')
-plt.savefig('successes.png')
+plt.savefig('successes' + name +'.png')
 plt.show()
 
 plt.plot(sorted(mapping.iterkeys()), goal1)
 plt.xlabel('Runs')
 plt.ylabel('Goal1')
 plt.title('Goal1 v/s Runs')
-plt.savefig('goal1.png')
+plt.savefig('goal1' + name +'.png')
 plt.show()
 
 
@@ -60,5 +60,5 @@ plt.plot(sorted(mapping.iterkeys()), goal2)
 plt.xlabel('Runs')
 plt.ylabel('Goal2')
 plt.title('Goal2 v/s Runs')
-plt.savefig('goal2.png')
+plt.savefig('goal2' + name +'.png')
 plt.show()
