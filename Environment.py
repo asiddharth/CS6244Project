@@ -156,9 +156,9 @@ class Environment :
             reward += 300
         elif pos[0][0] >= 190 and self.goals_reached ==2:
             self.goals_reached = 3
-            reward += 600
+            reward += 900
         elif self.goals_reached ==3 and pos[0][0] > 200 :
-            reward += 1200
+            reward += 2000
         return reward
 
     def reset(self, num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise,

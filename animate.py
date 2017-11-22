@@ -5,8 +5,8 @@ import matplotlib.patches as mpatches
 from matplotlib import animation
 import pickle
 
-num_cars = 5
-blah = pickle.load(open("sequence_noise_0_vel_half_env55000.pkl", "rb"))
+num_cars = 8
+blah = pickle.load(open("1/sequence_noise_1_vel_half_env5500test.pkl", "rb"))
 
 fig = plt.figure()
 
@@ -41,7 +41,7 @@ def animate(i):
 anim = animation.FuncAnimation(fig, animate,
                                init_func=init,
                                frames=len(blah),
-                               interval=250,
+                               interval=500,
                                repeat = False,
                                blit=True)
 plt.ylim((10,30))

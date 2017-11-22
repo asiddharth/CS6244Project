@@ -2,14 +2,18 @@ from Environment import  Environment
 from rtdp_agent import Agent
 import pickle
 from copy import deepcopy
+import sys
 
-num_cars = 5
+num_cars = 8
 num_actions = 21+9 #21 for acceleration, 9 for angular velocity
-pos = [[60,17],[100,17],[120,19],[180,21],[120,15]]
-vel = [0,0.5,0.5,-0.5,0.5]
-acc = [0,0,0,0,0]
-acc_noise = 0
-angular_vel_z_noise = 0
+#pos = [[60,17],[100,17],[120,19],[180,21],[120,15]]
+#vel = [0,0.5,0.5,-0.5,0.5]
+pos = [[60,17],[100,17],[100,19],[120,21],[120,15], [140, 21], [140, 19], [180, 15]]
+vel = [0,0.5,0.5,-0.5,-0.5, -0.5, 0.5, -0.5]
+
+acc = [0,0,0,0,0,0,0,0]
+acc_noise = int(sys.argv[1])
+angular_vel_z_noise = int(sys.argv[1])
 acc_resolution = 0.5
 ang_resolution = 10
 acc_min = -5
@@ -38,7 +42,7 @@ final_seq = []
 #min_steps = 1000
 max_reward = -float("inf")
 stats = []
-while num_episodes < 5001:
+while num_episodes < 1001:
     steps = 0
     reward = -1
     env.reset(num_cars, num_actions, pos, vel, acc, acc_noise,angular_vel_z_noise,
@@ -93,7 +97,7 @@ while num_episodes < 5001:
             max_reward = cum_reward
             final_seq = deepcopy(state_sequence)
     if num_episodes % 500 == 0 :
-        pickle.dump(final_seq, open("sequence_noise_0_vel_half_env5" + str(num_episodes) + ".pkl", "wb"))
+        pickle.dump(final_seq, open(sys.argv[1] + "/" +"sequence_noise_"+ sys.argv[1] +"_vel_half_env5" + str(num_episodes) + "test.pkl", "wb"))
         print len(final_seq), max_reward
         max_reward = -float("inf")
 
@@ -103,8 +107,8 @@ while num_episodes < 5001:
 
 print len(final_seq)
 print final_seq
-with open("sequence_noise_0_vel_half_env5.pkl", "wb") as f:
+with open(sys.argv[1] + "/" +"sequence_noise_"+ sys.argv[1]+"_vel_half_env5.testpkl", "wb") as f:
     pickle.dump(final_seq, f)
 
-with open("sequence_noise_0_vel_half_env5_stats.pkl", "wb") as f:
+with open(sys.argv[1] + "/" +"sequence_noise_"+ sys.argv[1]+"_vel_half_env5_stats.testpkl", "wb") as f:
     pickle.dump(stats, f)

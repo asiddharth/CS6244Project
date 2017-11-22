@@ -1,6 +1,6 @@
 import pickle
 import matplotlib.pyplot as plt
-name = "env5"
+name = "env5_noise1"
 blah = pickle.load(open("sequence_noise_1_vel_half_env5_stats.pkl", "rb"))
 print blah
 mapping=  {}
